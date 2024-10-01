@@ -74,7 +74,7 @@ const contract = new web3.eth.Contract( [
       "stateMutability": "view",
       "type": "function"
     }
-  ], "0x1B4931EA57785E12F19a33d638AD12Ae46a99f3d");
+  ], "0xFCfc4363042d3402c30762464fe8a3B97534592c");
 
 async function saveFiles(fileEncoding1, fileEncoding2) {
   const accounts = await web3.eth.getAccounts();
