@@ -51,9 +51,9 @@ cd MiniProject
 
 ### 2. Install dependencies:
 Ensure you have node_modules installed by running the following command in the project directory:
-bash
+```bash
 npm install
-
+```
 This will install all the required dependencies, including Web3.js.
 
 ### 3. Ganache Setup:
@@ -65,7 +65,7 @@ By default, Ganache runs on http://127.0.0.1:7545. Make sure to use this RPC URL
 Deploy your smart contract to Ganache, and ensure that the deployed contract address and ABI are stored in a file named deployedContract.json.
 
 The deployedContract.json should have the following structure:
-json
+```json
 {
   "address": "YOUR_DEPLOYED_CONTRACT_ADDRESS",
   "abi": [
@@ -132,28 +132,28 @@ json
     }
   ]
 }
-
+```
 
 
 ### 5. Update the Script:
 Ensure the correct contract address and ABI are included in saveFiles.js. This information is obtained from the deployedContract.json file generated when deploying the smart contract.
-javascript
+```javascript
 const contract = new web3.eth.Contract(ABI, "YOUR_DEPLOYED_CONTRACT_ADDRESS");
-
+```
 ### 6. Run the Script:
 You can run the saveFiles.js script with the following command:
-bash
+```bash
 node saveFiles.js
-
+```
 ## Usage
 
 1. Start Ganache and ensure your contract is deployed.
 2. Update the deployedContract.json with the correct contract address and ABI.
 3. Run the saveFiles.js script to save file encodings to the blockchain.
 
-bash
+```bash
 node saveFiles.js
-
+```
 By default, the script will use the first account in the Ganache accounts list to send the transaction.
 ## Troubleshooting
 1. Ensure Ganache is running: If the script fails to connect to Ganache, check that Ganache is running at http://127.0.0.1:7545.
