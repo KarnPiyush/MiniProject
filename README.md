@@ -43,9 +43,10 @@ Additionally, the contract emits a FilesSaved event when files are saved success
 ## Setup
 
 ### 1. Clone the repository:
-bash
-git clone [https://github.com/your-repository/dapp-save-files.git](https://github.com/KarnPiyush/MiniProject.git)
-cd dapp-save-files
+```bash
+git clone https://github.com/KarnPiyush/MiniProject.git
+```
+cd MiniProject
 
 
 ### 2. Install dependencies:
