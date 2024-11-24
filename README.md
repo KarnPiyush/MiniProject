@@ -1,160 +1,224 @@
-# Save Files DApp
+# Blockchain File Storage Application
 
-This decentralized application allows users to save file encodings to the blockchain using a deployed smart contract. The smart contract is deployed on the Ganache blockchain, and this script facilitates interaction with the contract using Web3.js.
-
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Prerequisites](#prerequisites)
-- [Smart Contract Overview](#smart-contract-overview)
-- [Setup](#setup)
-- [Usage](#usage)
-- [Troubleshooting](#troubleshooting)
-
----
-
-## Introduction
-
-This DApp enables users to store file encodings on the blockchain. The saveFiles.js script interacts with a deployed smart contract on the Ganache blockchain. It includes two primary functionalities:
-1. *Save File Encodings* - Save two file encodings to the blockchain.
-2. *Get File Encodings* - Retrieve the saved file encodings from the blockchain.
+This application demonstrates a simple blockchain-based file storage system using Ethereum (Ganache), Web3.js, and Express.js. It allows users to store and retrieve file encodings on the blockchain.
 
 ## Prerequisites
 
-Before running the script, ensure you have the following software installed and configured:
-
-- [Node.js](https://nodejs.org/) (v14.x or later)
-- [Ganache](https://www.trufflesuite.com/ganache) (local blockchain)
-- [Web3.js](https://web3js.readthedocs.io/)
-- A deployed smart contract with the saveFiles and getFiles functions.
-
-### Libraries Used
-- *Web3.js*: To interact with the Ethereum blockchain.
-- *fs*: To read and write files (used for storing deployed contract information).
-
-## Smart Contract Overview
-
-The smart contract has two main functions:
-1. saveFiles(string fileEncoding1, string fileEncoding2) - Saves two string encodings on the blockchain.
-2. getFiles() - Retrieves the two saved file encodings.
-
-Additionally, the contract emits a FilesSaved event when files are saved successfully.
+Before running the application, make sure you have the following installed:
+- [Node.js](https://nodejs.org/) (version 14 or higher)
+- [Ganache](https://trufflesuite.com/ganache/) - A personal blockchain for Ethereum development
+- npm (Node Package Manager, comes with Node.js)
 
 ## Setup
 
-### 1. Clone the repository:
+1. Clone the repository and navigate to the project directory:
 ```bash
-git clone https://github.com/KarnPiyush/MiniProject.git
+git clone <repository-url>
+cd <project-directory>
 ```
-cd MiniProject
 
-
-### 2. Install dependencies:
-Ensure you have node_modules installed by running the following command in the project directory:
+2. Install the required dependencies:
 ```bash
-npm install
+npm install express web3 fs
 ```
-This will install all the required dependencies, including Web3.js.
 
-### 3. Ganache Setup:
-Make sure that Ganache is running on your machine. You can download and run it from the official website.
+3. Start Ganache:
+   - Launch the Ganache application
+   - Make sure it's running on `http://127.0.0.1:7545` (default port)
+   - Keep note of the available accounts and their private keys
 
-By default, Ganache runs on http://127.0.0.1:7545. Make sure to use this RPC URL in the script.
+## Smart Contract Architecture
 
-### 4. Smart Contract Deployment:
-Deploy your smart contract to Ganache, and ensure that the deployed contract address and ABI are stored in a file named deployedContract.json.
+The `FileStorage` smart contract (`FileStorage.sol`) serves as the core of this application, managing file storage on the blockchain.
 
-The deployedContract.json should have the following structure:
-```json
-{
-  "address": "YOUR_DEPLOYED_CONTRACT_ADDRESS",
-  "abi": [
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "fileEncoding1",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "fileEncoding2",
-          "type": "string"
-        }
-      ],
-      "name": "FilesSaved",
-      "type": "event"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "fileEncoding1",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "fileEncoding2",
-          "type": "string"
-        }
-      ],
-      "name": "saveFiles",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getFiles",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract FileStorage {
+    // Struct to store two file encoding strings
+    struct FileData {
+        string fileEncoding1;
+        string fileEncoding2;
     }
-  ]
+
+    // Mapping user address to their file data
+    mapping(address => FileData) private fileMappings;
+
+    // Event to emit when files are saved
+    event FilesSaved(address indexed user, string fileEncoding1, string fileEncoding2);
+
+    // Function to save the file encodings
+    function saveFiles(string memory fileEncoding1, string memory fileEncoding2) public {
+        fileMappings[msg.sender] = FileData(fileEncoding1, fileEncoding2);
+        emit FilesSaved(msg.sender, fileEncoding1, fileEncoding2);
+    }
+
+    // Function to get the file encodings for the calling user
+    function getFiles() public view returns (string memory, string memory) {
+        FileData memory fileData = fileMappings[msg.sender];
+        return (fileData.fileEncoding1, fileData.fileEncoding2);
+    }
 }
 ```
 
+### Contract Components
 
-### 5. Update the Script:
-Ensure the correct contract address and ABI are included in saveFiles.js. This information is obtained from the deployedContract.json file generated when deploying the smart contract.
+1. **FileData Struct**
+   - Purpose: Organizes two file encodings as a single data structure
+   - Properties:
+     - `fileEncoding1`: First file encoding string
+     - `fileEncoding2`: Second file encoding string
+
+2. **Storage Mapping**
+   - Type: `mapping(address => FileData)`
+   - Purpose: Associates each Ethereum address with their file data
+   - Access: Private to ensure data security
+
+3. **Events**
+   - `FilesSaved` event
+   - Parameters:
+     - `user` (indexed): Address of the user saving files
+     - `fileEncoding1`: First file encoding
+     - `fileEncoding2`: Second file encoding
+   - Purpose: Enables event tracking and frontend notifications
+
+### Contract Functions
+
+1. **saveFiles**
+   ```solidity
+   function saveFiles(string memory fileEncoding1, string memory fileEncoding2) public
+   ```
+   - Purpose: Stores two file encodings for the calling user
+   - Parameters:
+     - `fileEncoding1`: First file encoding string
+     - `fileEncoding2`: Second file encoding string
+   - Behavior:
+     - Creates/updates FileData for msg.sender
+     - Emits FilesSaved event
+   - Gas considerations: Cost varies with string lengths
+
+2. **getFiles**
+   ```solidity
+   function getFiles() public view returns (string memory, string memory)
+   ```
+   - Purpose: Retrieves stored file encodings for the calling user
+   - Returns: Tuple of both file encodings
+   - Access: Public view function (no gas cost for calls)
+   - Security: Only returns caller's own files
+
+## Deployment
+
+1. First, deploy the smart contract:
+```bash
+node deployContract.js
+```
+This will:
+- Deploy the contract to your local Ganache blockchain
+- Create a `deployedContract.json` file containing the contract's address and ABI
+- Use the following configuration:
+  - Gas limit: 1,500,000 units
+  - Gas price: 30 Gwei
+
+2. Start the Express server:
+```bash
+node app.js
+```
+The server will start running on port 3000.
+
+## API Integration Details
+
+### API Endpoints
+
+1. **Save Files**
+- **Endpoint**: POST `/save-files`
+- **Content-Type**: `application/json`
+- **Request Body**:
+```json
+{
+    "fileEncoding1": "your-file-encoding-1",
+    "fileEncoding2": "your-file-encoding-2"
+}
+```
+- **Response**:
+```json
+{
+    "success": true,
+    "transactionHash": "0x..."
+}
+```
+
+2. **Get Files**
+- **Endpoint**: GET `/get-files/:address`
+- **Parameters**: 
+  - `address`: Ethereum address of the user
+- **Response**:
+```json
+{
+    "success": true,
+    "address": "0x...",
+    "fileEncoding1": "your-file-encoding-1",
+    "fileEncoding2": "your-file-encoding-2"
+}
+```
+
+### Implementation Details
+
+1. **Contract Instance Creation**
 ```javascript
-const contract = new web3.eth.Contract(ABI, "YOUR_DEPLOYED_CONTRACT_ADDRESS");
+const web3 = new Web3('http://127.0.0.1:7545');
+const contract = new web3.eth.Contract(contractABI, address);
 ```
-### 6. Run the Script:
-You can run the saveFiles.js script with the following command:
-```bash
-node saveFiles.js
-```
-## Usage
 
-1. Start Ganache and ensure your contract is deployed.
-2. Update the deployedContract.json with the correct contract address and ABI.
-3. Run the saveFiles.js script to save file encodings to the blockchain.
+2. **Data Flow**
+   - Saving Files:
+     ```
+     Client Request → Express API → Web3.js → Smart Contract → Blockchain
+     ```
+   - Retrieving Files:
+     ```
+     Client Request → Express API → Web3.js → Smart Contract → Response
+     ```
 
-```bash
-node saveFiles.js
-```
-By default, the script will use the first account in the Ganache accounts list to send the transaction.
+## Performance and Security Considerations
+
+### Performance
+1. **Storage Limitations**
+   - String storage is expensive on Ethereum
+   - Consider file encoding size limits
+   - Monitor gas costs for large strings
+
+2. **Gas Optimization**
+   - `saveFiles` function costs vary with data size
+   - `getFiles` is free (view function)
+   - Consider batch operations for multiple files
+
+### Security
+- This is a demonstration application and should not be used in production without proper security auditing
+- The application currently uses the first Ganache account for transactions
+- File encodings are stored directly on the blockchain, which may not be suitable for large files
+- No authentication mechanism is implemented
+
+## Error Handling
+
+The application includes error handling for:
+- Invalid Ethereum addresses
+- Non-existent files
+- Contract interaction errors
+- Server errors
+
 ## Troubleshooting
-1. Ensure Ganache is running: If the script fails to connect to Ganache, check that Ganache is running at http://127.0.0.1:7545.
-2. Check Gas Limit: If you encounter a gas issue, increase the gas limit in the transaction configuration.
+
+1. If you encounter connection errors:
+   - Ensure Ganache is running and accessible at `http://127.0.0.1:7545`
+   - Check if the contract was deployed successfully
+   - Verify the contract address in `deployedContract.json`
+
+2. If transactions fail:
+   - Ensure your Ganache account has sufficient ETH
+   - Check the gas limits and prices in `deployContract.js`
+
+## License
+
+MIT License
+
